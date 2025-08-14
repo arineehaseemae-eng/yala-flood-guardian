@@ -42,10 +42,79 @@ const Map = () => {
       { id: 8, name: 'อำเภอกรอกพระ', coords: [101.2200, 6.6200] as [number, number], level: 'danger', accessible: false }
     ],
     routes: [
-      { from: 'เมืองยะลา', to: 'เบตง', status: 'open', distance: '95 กม.' },
-      { from: 'เมืองยะลา', to: 'ธารโต', status: 'caution', distance: '45 กม.' },
-      { from: 'บันนังสตา', to: 'รามัน', status: 'closed', distance: '32 กม.' },
-      { from: 'ยะรัง', to: 'กาบัง', status: 'closed', distance: '28 กม.' }
+      { 
+        id: 'route-1',
+        name: 'เส้นทางหลัก เมืองยะลา-เบตง', 
+        type: 'normal',
+        coordinates: [
+          [101.2804, 6.5409], // เมืองยะลา
+          [101.2900, 6.4500],
+          [101.3000, 6.3800],
+          [101.3000, 5.7800]  // เบตง
+        ],
+        distance: '95 กม.',
+        description: 'เส้นทางปกติ ผ่านได้สะดวก'
+      },
+      { 
+        id: 'route-2',
+        name: 'เส้นทาง เมืองยะลา-ธารโต', 
+        type: 'flood',
+        coordinates: [
+          [101.2804, 6.5409], // เมืองยะลา
+          [101.3200, 6.5100],
+          [101.3500, 6.4800]  // ธารโต
+        ],
+        distance: '45 กม.',
+        description: 'เส้นทางท่วมหนัก ใช้ความระมัดระวัง'
+      },
+      { 
+        id: 'route-3',
+        name: 'เส้นทาง บันนังสตา-รามัน', 
+        type: 'blocked',
+        coordinates: [
+          [101.1900, 6.3200], // บันนังสตา
+          [101.2800, 6.3500],
+          [101.4200, 6.3900]  // รามัน
+        ],
+        distance: '32 กม.',
+        description: 'เส้นทางถูกตัดขาด ไม่สามารถผ่านได้'
+      },
+      { 
+        id: 'route-4',
+        name: 'เส้นทางอพยพ ยะรัง-กาบัง', 
+        type: 'evacuation',
+        coordinates: [
+          [101.3700, 6.4200], // ยะรัง
+          [101.4200, 6.4350],
+          [101.4800, 6.4500]  // กาบัง
+        ],
+        distance: '28 กม.',
+        description: 'เส้นทางอพยพฉุกเฉิน'
+      },
+      { 
+        id: 'route-5',
+        name: 'เส้นทางอพยพ เมืองยะลา-รามัน', 
+        type: 'evacuation',
+        coordinates: [
+          [101.2804, 6.5409], // เมืองยะลา
+          [101.3500, 6.4600],
+          [101.4200, 6.3900]  // รามัน
+        ],
+        distance: '38 กม.',
+        description: 'เส้นทางอพยพหลัก'
+      },
+      { 
+        id: 'route-6',
+        name: 'เส้นทาง กรอกพระ-เมืองยะลา', 
+        type: 'blocked',
+        coordinates: [
+          [101.2200, 6.6200], // กรอกพระ
+          [101.2500, 6.5800],
+          [101.2804, 6.5409]  // เมืองยะลา
+        ],
+        distance: '25 กม.',
+        description: 'เส้นทางถูกตัดขาด เนื่องจากน้ำท่วม'
+      }
     ]
   };
 
@@ -107,9 +176,95 @@ const Map = () => {
             .addTo(map.current);
         });
 
+        // Add route lines with different colors
+        yalaData.routes.forEach((route, index) => {
+          const routeId = `route-${index}`;
+          const routeColor = 
+            route.type === 'normal' ? '#10b981' :    // เขียว - เส้นทางปกติ
+            route.type === 'flood' ? '#f59e0b' :     // ส้ม - เส้นทางท่วมหนัก
+            route.type === 'blocked' ? '#ef4444' :   // แดง - เส้นทางถูกตัดขาด
+            route.type === 'evacuation' ? '#3b82f6' : '#6b7280'; // น้ำเงิน - เส้นทางอพยพ
+
+          // Add route source
+          map.current.addSource(routeId, {
+            type: 'geojson',
+            data: {
+              type: 'Feature',
+              properties: {
+                name: route.name,
+                type: route.type,
+                distance: route.distance,
+                description: route.description
+              },
+              geometry: {
+                type: 'LineString',
+                coordinates: route.coordinates
+              }
+            }
+          });
+
+          // Add route layer
+          map.current.addLayer({
+            id: routeId,
+            type: 'line',
+            source: routeId,
+            layout: {
+              'line-join': 'round',
+              'line-cap': 'round'
+            },
+            paint: {
+              'line-color': routeColor,
+              'line-width': [
+                'case',
+                ['==', ['get', 'type'], 'evacuation'], 6,
+                ['==', ['get', 'type'], 'blocked'], 4,
+                5
+              ],
+              'line-opacity': 0.8,
+              'line-dasharray': [
+                'case',
+                ['==', ['get', 'type'], 'blocked'], [2, 2],
+                ['==', ['get', 'type'], 'flood'], [4, 2],
+                [1, 0]
+              ]
+            }
+          });
+
+          // Add click event for routes
+          map.current.on('click', routeId, (e: any) => {
+            const properties = e.features[0].properties;
+            new mapboxgl.default.Popup()
+              .setLngLat(e.lngLat)
+              .setHTML(`
+                <div class="p-3">
+                  <h3 class="font-semibold text-base">${properties.name}</h3>
+                  <p class="text-sm mt-1">ระยะทาง: ${properties.distance}</p>
+                  <p class="text-sm mt-1">${properties.description}</p>
+                  <div class="mt-2">
+                    <span class="inline-block px-2 py-1 text-xs rounded" style="background-color: ${routeColor}; color: white;">
+                      ${route.type === 'normal' ? 'เส้นทางปกติ' :
+                        route.type === 'flood' ? 'เส้นทางท่วมหนัก' :
+                        route.type === 'blocked' ? 'เส้นทางถูกตัดขาด' : 'เส้นทางอพยพ'}
+                    </span>
+                  </div>
+                </div>
+              `)
+              .addTo(map.current);
+          });
+
+          // Change cursor on hover
+          map.current.on('mouseenter', routeId, () => {
+            map.current.getCanvas().style.cursor = 'pointer';
+          });
+
+          map.current.on('mouseleave', routeId, () => {
+            map.current.getCanvas().style.cursor = '';
+          });
+        });
+
         toast({
           title: "โหลดแผนที่สำเร็จ",
-          description: "แผนที่จังหวัดยะลาพร้อมใช้งาน",
+          description: "แผนที่จังหวัดยะลาพร้อมใช้งาน พร้อมเส้นทางสีต่างๆ",
         });
       });
 
@@ -244,18 +399,44 @@ const Map = () => {
               <CardHeader>
                 <CardTitle>สัญลักษณ์</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-center space-x-3">
-                  <div className="w-4 h-4 bg-red-500 rounded-full"></div>
-                  <span className="text-sm">พื้นที่อันตราย</span>
+              <CardContent className="space-y-4">
+                <div>
+                  <h4 className="text-sm font-medium mb-2">พื้นที่น้ำท่วม</h4>
+                  <div className="space-y-2">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-4 h-4 bg-red-500 rounded-full"></div>
+                      <span className="text-sm">พื้นที่อันตราย</span>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <div className="w-4 h-4 bg-yellow-500 rounded-full"></div>
+                      <span className="text-sm">พื้นที่เฝ้าระวัง</span>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <div className="w-4 h-4 bg-green-500 rounded-full"></div>
+                      <span className="text-sm">พื้นที่ปลอดภัย</span>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex items-center space-x-3">
-                  <div className="w-4 h-4 bg-yellow-500 rounded-full"></div>
-                  <span className="text-sm">พื้นที่เฝ้าระวัง</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <div className="w-4 h-4 bg-green-500 rounded-full"></div>
-                  <span className="text-sm">พื้นที่ปลอดภัย</span>
+                <div>
+                  <h4 className="text-sm font-medium mb-2">เส้นทาง</h4>
+                  <div className="space-y-2">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-6 h-1 bg-green-500 rounded-full"></div>
+                      <span className="text-sm">เส้นทางปกติ</span>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <div className="w-6 h-1 bg-orange-500 rounded-full border-dashed border-2 border-orange-300"></div>
+                      <span className="text-sm">เส้นทางท่วมหนัก</span>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <div className="w-6 h-1 bg-red-500 rounded-full border-dashed border-2 border-red-300"></div>
+                      <span className="text-sm">เส้นทางถูกตัดขาด</span>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <div className="w-6 h-1.5 bg-blue-500 rounded-full"></div>
+                      <span className="text-sm">เส้นทางอพยพ</span>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -272,17 +453,19 @@ const Map = () => {
                 {yalaData.routes.map((route, index) => (
                   <div key={index} className="flex items-center justify-between text-sm">
                     <div>
-                      <p className="font-medium">{route.from} - {route.to}</p>
+                      <p className="font-medium">{route.name}</p>
                       <p className="text-muted-foreground">{route.distance}</p>
                     </div>
                     <Badge 
                       className={
-                        route.status === 'open' ? 'bg-flood-safe' :
-                        route.status === 'caution' ? 'bg-flood-warning' : 'bg-flood-danger'
+                        route.type === 'normal' ? 'bg-green-500' :
+                        route.type === 'flood' ? 'bg-orange-500' :
+                        route.type === 'blocked' ? 'bg-red-500' : 'bg-blue-500'
                       }
                     >
-                      {route.status === 'open' ? 'เปิด' :
-                       route.status === 'caution' ? 'ระวัง' : 'ปิด'}
+                      {route.type === 'normal' ? 'ปกติ' :
+                       route.type === 'flood' ? 'ท่วม' : 
+                       route.type === 'blocked' ? 'ปิด' : 'อพยพ'}
                     </Badge>
                   </div>
                 ))}
