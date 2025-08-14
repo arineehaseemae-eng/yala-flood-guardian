@@ -17,26 +17,42 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 196 75% 36%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 120 38% 54%;
+    --secondary-foreground: 0 0% 100%;
 
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 180 65% 40%;
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --ring: 196 75% 36%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
+
+    /* Flood-specific colors */
+    --flood-blue: 196 100% 35%;
+    --flood-green: 142 69% 45%;
+    --flood-warning: 45 100% 51%;
+    --flood-danger: 0 84% 60%;
+    --flood-safe: 120 61% 50%;
+
+    /* Text shadows for better readability */
+    --text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+    --text-shadow-light: 0 1px 2px rgba(0, 0, 0, 0.3);
+
+    /* Gradients */
+    --gradient-hero: linear-gradient(135deg, hsl(var(--flood-blue)), hsl(var(--flood-green)));
+    --gradient-navbar: linear-gradient(90deg, hsl(var(--flood-blue)), hsl(var(--accent)));
+    --gradient-card: linear-gradient(145deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7));
 
     --sidebar-background: 0 0% 98%;
 
@@ -65,24 +81,35 @@ All colors MUST be HSL.
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 210 40% 98%;
+    --primary: 196 75% 55%;
     --primary-foreground: 222.2 47.4% 11.2%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 120 38% 65%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
 
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 180 65% 55%;
+    --accent-foreground: 222.2 47.4% 11.2%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
 
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --ring: 196 75% 55%;
+
+    /* Dark mode flood colors */
+    --flood-blue: 196 100% 45%;
+    --flood-green: 142 69% 55%;
+    --flood-warning: 45 100% 61%;
+    --flood-danger: 0 84% 70%;
+    --flood-safe: 120 61% 60%;
+
+    --gradient-hero: linear-gradient(135deg, hsl(var(--flood-blue)), hsl(var(--flood-green)));
+    --gradient-navbar: linear-gradient(90deg, hsl(var(--flood-blue)), hsl(var(--accent)));
+    --gradient-card: linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
@@ -101,5 +128,32 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+  }
+
+  .text-shadow {
+    text-shadow: var(--text-shadow);
+  }
+
+  .text-shadow-light {
+    text-shadow: var(--text-shadow-light);
+  }
+
+  .hero-text {
+    color: white;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7), 0 4px 16px rgba(0, 0, 0, 0.3);
+    font-weight: 600;
+  }
+
+  .navbar-gradient {
+    background: var(--gradient-navbar);
+  }
+
+  .hero-gradient {
+    background: var(--gradient-hero);
+  }
+
+  .card-gradient {
+    background: var(--gradient-card);
+    backdrop-filter: blur(10px);
   }
 }

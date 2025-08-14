@@ -52,6 +52,13 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
+				flood: {
+					blue: 'hsl(var(--flood-blue))',
+					green: 'hsl(var(--flood-green))',
+					warning: 'hsl(var(--flood-warning))',
+					danger: 'hsl(var(--flood-danger))',
+					safe: 'hsl(var(--flood-safe))'
+				},
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',
